@@ -1,0 +1,27 @@
+{
+  "name": "ajay",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev":"nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abansal15/XTube.git"
+  },
+  "keywords": [
+    "javascript",
+    "backend"
+  ],
+  "author": "Ajay",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/abansal15/XTube/issues"
+  },
+  "homepage": "https://github.com/abansal15/XTube#readme",
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
