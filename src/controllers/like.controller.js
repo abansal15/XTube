@@ -6,6 +6,9 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    if (!(videoId && isValidObjectId(videoId))) {
+        throw new ApiError(400, "Invalid video id");
+    }
     // toggle like on video
     try {
         const userAlreadyLiked = await Like.find(
@@ -15,7 +18,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
             }
         )
         if (userAlreadyLiked && userAlreadyLiked.length > 0) {
-            await Like.findByIdAndDelete(userAlreadyLiked,
+            await Like.findByIdAndDelete(userAlreadyLiked[0]._id,
                 {
                     new: true
                 }
@@ -53,7 +56,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
         if (userAlreadyComment && userAlreadyComment.length > 0) {
             await Like.findByIdAndDelete(
-                userAlreadyComment,
+                userAlreadyComment[0]._id,
                 {
                     new: true
                 }
@@ -94,7 +97,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
         if (userAlreadyTweet && userAlreadyTweet.length > 0) {
             await Like.findByIdAndDelete(
-                userAlreadyTweet,
+                userAlreadyTweet[0]._id,
                 {
                     new: true
                 }
