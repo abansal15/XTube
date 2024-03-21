@@ -7,6 +7,10 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
 
+const checking = asyncHandler(async (req, res) => {
+    return res.status(200).json(new ApiResponse(200,{}, "checking passed of user route"))
+})
+
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId);
@@ -414,4 +418,4 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, user[0].watchHistory, "watch history fetched successfully"));
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory }
+export { checking, registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory }
