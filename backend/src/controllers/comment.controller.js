@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose, { isValidObjectId } from "mongoose"
 import { Comment } from "../models/comment.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
@@ -6,11 +6,19 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
     // get all comments for a video
-    const { videoId } = req.params
-    const { page = 1, limit = 10 } = req.query
 
-    page = isNaN(page) ? 1 : Number(page);
-    limit = isNaN(limit) ? 10 : Number(limit);
+    const { page: rawPage = 1, limit = 10 } = req.query;
+    const page = isNaN(rawPage) ? 1 : Number(rawPage);
+
+    // let page = isNaN(page) ? 1 : Number(page);
+    // let limit = isNaN(limit) ? 10 : Number(limit);
+
+
+    // page = isNaN(page) ? 1 : Number(page);
+    // limit = isNaN(limit) ? 10 : Number(limit);
+
+    const { videoId } = req.params;
+    // console.log(videoId)
 
     if (!videoId?.trim() || !isValidObjectId(videoId)) {
         throw new ApiError(400, "video id is required or valid");
@@ -60,11 +68,20 @@ const getVideoComments = asyncHandler(async (req, res) => {
                     $size: '$likeCount'
                 }
             }
-        }, {
+        }, 
+        {
             $addFields: {
                 owner: {
                     $first: '$owner'
                 }
+            }
+        },
+        {
+            $addFields: {
+                createdAt: {
+                    $toDate: '$_id'
+                },
+                // _id: '$_id'
             }
         },
         {
@@ -75,9 +92,9 @@ const getVideoComments = asyncHandler(async (req, res) => {
         },
     ]);
 
-    if (comments.length == 0) {
-        throw new ApiError(500, "commets not found!");
-    }
+    // if (comments.length == 0) {
+    //     throw new ApiError(500, "commets not found!");
+    // }
     return res
         .status(200)
         .json(new ApiResponse(200, comments, "comments fetched successfully!"));
@@ -147,7 +164,7 @@ const updateComment = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Something went wrong while updating the comment")
         }
 
-        return res.status(200).json(new ApiResponse(200, updateComment, "comment updated successfully"))
+        return res.status(200).json(new ApiResponse(200, updatedComment, "comment updated successfully"))
 
     } catch (error) {
         throw new ApiError(401, error?.message)
@@ -186,7 +203,7 @@ const deleteComment = asyncHandler(async (req, res) => {
             throw new ApiError(400, "Something went wrong while updating the comment")
         }
 
-        return res.status(200).json(new ApiResponse(200, updateComment, "comment updated successfully"))
+        return res.status(200).json(new ApiResponse(200, updatedComment, "comment updated successfully"))
 
     } catch (error) {
         throw new ApiError(401, error?.message || "cannot update comment")

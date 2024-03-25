@@ -58,6 +58,8 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "user already exists!!")
     }
 
+    console.log(req.files);
+
     const avatarLocalPath = req.files?.avatar[0]?.path;
     let coverImageLocalPath;
     if (req.files?.coverImage)
@@ -105,7 +107,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // send res successfully logined in 
 
     const { email, username, password } = req.body;
-    if (!username && !password) {
+    if (!username && !email) {
         throw new ApiError(400, "username or email is required")
     }
 

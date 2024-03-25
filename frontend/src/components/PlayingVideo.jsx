@@ -4,24 +4,82 @@ import { useParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import DisplayAllVideo from './DisplayAllVideo';
 
+
+
+function Comment({ comment }) {
+    const [timeAgo, setTimeAgo] = useState('');
+
+    useEffect(() => {
+        const currentTime = new Date();
+        const createdAt = new Date(comment.createdAt);
+        const elapsed = currentTime - createdAt;
+        const msPerMinute = 60 * 1000;
+        const msPerHour = msPerMinute * 60;
+        const msPerDay = msPerHour * 24;
+
+        if (elapsed < msPerMinute) {
+            setTimeAgo(Math.round(elapsed / 1000) + ' seconds ago');
+        } else if (elapsed < msPerHour) {
+            setTimeAgo(Math.round(elapsed / msPerMinute) + ' minutes ago');
+        } else if (elapsed < msPerDay) {
+            setTimeAgo(Math.round(elapsed / msPerHour) + ' hours ago');
+        } else {
+            setTimeAgo(Math.round(elapsed / msPerDay) + ' days ago');
+        }
+    }, [comment.createdAt]);
+
+    return (
+        <div key={comment._id} className="flex gap-x-4 comment">
+            <div className="mt-2 h-11 w-11 shrink-0">
+                <img src={comment.owner.avatar} alt={comment.owner.fullName} className="h-full w-full rounded-full" />
+            </div>
+            <div className="block">
+                <p className="flex items-center text-gray-200">
+                    {comment.owner.fullName} · <span className="text-sm">{timeAgo}</span>
+                </p>
+                <p className="text-sm text-gray-200">@{comment.owner.username}</p>
+                <p className="mt-3 text-sm">{comment.content}</p>
+            </div>
+        </div>
+    );
+}
+
 function PlayingVideo() {
     const { value } = useParams();
-    const [videos, setVideos] = useState([]);
+    const [video, setVideo] = useState(null);
+    const [comments, setComments] = useState([]);
+    const [timeAgo, setTimeAgo] = useState('');
 
     useEffect(() => {
         axios.get('/api/v1/')
             .then((response) => {
                 // console.log(response.data.data);
-                setVideos(response.data.data);
+                const videoData = response.data.data.find(video => video.videoFile === value);
+                if (videoData) {
+                    setVideo(videoData);
+                } else {
+                    console.log("Video not found");
+                }
             })
             .catch((error) => {
                 console.log(error);
             });
-    }, []);
+    }, [value]);
 
-    const video = videos.find(video => video.videoFile === value);
+    useEffect(() => {
+        if (video) {
+            axios.get(`/api/v1/comments/${video._id}`)
+                .then((result) => {
+                    setComments(result.data.data);
+                    console.log("comment data is : ", result.data.data)
+                }).catch((err) => {
+                    console.log("getting comments error in PlayingVideo : ", err)
+                });
+        }
+    }, [video]);
 
-    console.log("video playing is : ", video)
+    // console.log("videoid iss: ", video._id);
+    // console.log("comments fetched is : ", comments.data)
 
     if (!video) {
         return <div>No video found.</div>;
@@ -46,7 +104,7 @@ function PlayingVideo() {
 
                 {/* Main video in the center */}
                 <div style={{ maxWidth: '70%', width: '50%', display: 'flex', flexDirection: 'column' }}>
-                    <iframe title="video-player" width="110%" height="106%" src={video.videoFile} frameborder="0" allowfullscreen></iframe>
+                    <iframe title="video-player" width="110%" height="106%" src={video.videoFile} frameborder="0" allowFullScreen></iframe>
                     <div>
                         <div className="mt-4 flex items-center justify-between">
                             <div className="flex items-center gap-x-4">
@@ -75,21 +133,30 @@ function PlayingVideo() {
 
                         </div>
                         {/* Description */}
-                        <hr className="my-4 border-white" />
-                        <div className="h-5 overflow-hidden group-focus:h-auto">
+                        <hr className="my-4 border-white mb-6" />
+
+                        <div className="h-5 mb-6 overflow-hidden group-focus:h-auto">
                             <p className="text-sm">{video.description}</p>
                         </div>
 
-                        {/* comments */}
+                        <div>
+                            {comments.length > 0 ? (
+                                <>
+                                    {comments.length > 1 ?
+                                        (<p className='mb-5'>{comments.length} comments</p>)
+                                        : (<p className='mb-5'>{comments.length} comment</p>)
+                                    }
 
-                        {/* <div>
-                            <p>{video.commentDetails.length} comments</p>
-                            <div>
-                                
+                                    {comments.map((comment) => (
+                                        <Comment key={comment._id} comment={comment} />
+                                    ))}
+                                </>
+                            )
+                                : (
+                                    <p>No comments</p>
+                                )}
+                        </div>
 
-
-                            </div>
-                        </div> */}
 
 
                     </div>
