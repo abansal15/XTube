@@ -38,7 +38,6 @@ function Navbar() {
                 console.log("error while finding user in navbar ", err)
             });
 
-
     }, isAuthenticated)
     // }
 

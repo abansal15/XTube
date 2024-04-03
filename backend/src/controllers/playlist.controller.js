@@ -4,19 +4,31 @@ import { Video } from "../models/video.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-
+import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
 const createPlaylist = asyncHandler(async (req, res) => {
-    const { name, description } = req.body
+    const { name, description } = req.body;
+    const thumbnailPath = req.file?.thumbnail[0]?.path;
     // create playlist
-    if (!name || !description) {
-        throw new ApiError(400, "name and description both are required")
+    if (!name || !description || !thumbnailPath) {
+        throw new ApiError(400, "name , description and Thumbnail all are required")
+    }
+
+    let uploadedThumbnail;
+
+    if (thumbnailPath) {
+        uploadedThumbnail = await uploadOnCloudinary(thumbnailPath);
+    }
+
+    if (thumbnailPath && !uploadedThumbnail) {
+        throw new ApiError(401, "Something went wrong while uploading Thumbnail");
     }
 
     const createdPlaylist = await Playlist.create(
         {
             name: name,
             description: description,
+            thumbnail: uploadedThumbnail?.url,
             owner: new mongoose.Types.ObjectId(req.user?._id),
             videos: []
         }
@@ -63,6 +75,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
                 $project: {
                     name: 1,
                     description: 1,
+                    thumbnail: 1,
                     createdAt: 1,
                     updatedAt: 1,
                     playlistVideos: 1
@@ -76,8 +89,11 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
         ]
     )
 
-    if (userPlaylists.length == 0) {
-        throw new ApiError(404, "playlist not found")
+    // if (userPlaylists.length == 0) {
+    //     throw new ApiError(404, "playlist not found")
+    // }
+    if (!(userPlaylists || userPlaylists.length > 0)) {
+        return res.status(200).json(new ApiResponse(200, {}, "no playlist created"))
     }
 
     return res.status(200).json(new ApiResponse(200, userPlaylists, "Playlist fetched successfully"))

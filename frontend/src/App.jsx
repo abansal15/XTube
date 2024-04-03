@@ -6,6 +6,9 @@ import Home from './components/Home.jsx';
 import PlayingVideo from './components/PlayingVideo.jsx';
 import LoginPage from './components/LoginPage.jsx';
 import RegisterPage from './components/RegisterPage.jsx';
+import AdminDashboard from './components/AdminDashboard.jsx';
+import UserChannel from './components/UserChannel.jsx';
+import UserChannelPlaylist from './components/UserChannelPlaylist.jsx';
 
 function App() {
   return (
@@ -17,6 +20,9 @@ function App() {
           <Route path="/playing/:value" element={<PlayingVideo />} />
           <Route exact path="/register" element={<RegisterPage />} />
           <Route exact path="/login" element={<LoginPage />} />
+          <Route exact path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route exact path="/user-channel" element={<UserChannel />} />
+          <Route path="/user/playlist/:userId" element={<UserChannelPlaylist />} />
         </Routes>
       </div>
     </Router>

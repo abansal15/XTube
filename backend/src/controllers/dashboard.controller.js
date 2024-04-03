@@ -63,12 +63,12 @@ const getChannelStats = asyncHandler(async (req, res) => {
                 },
             },
         },
-        {
-            $project: {
-                _id: 0,
-                owner: 0,
-            },
-        },
+        // {
+        //     $project: {
+        //         _id: 0,
+        //         owner: 0,
+        //     },
+        // },
     ]);
 
     return res.status(200).json(new ApiResponse(200, data, "get channel stats!"));
