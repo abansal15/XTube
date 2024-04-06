@@ -133,6 +133,22 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                     as: "playlistVideos",
                     pipeline: [
                         {
+                            $lookup: {
+                                from: 'users',
+                                localField: 'owner',
+                                foreignField: '_id',
+                                as: "videoOwner",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            avatar: 1,
+                                            username: 1,
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
                             $project: {
                                 thumbnail: 1,
                                 videoFile: 1,
@@ -140,8 +156,27 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                                 description: 1,
                                 duration: 1,
                                 views: 1,
+                                videoOwner: 1
                             }
                         },
+
+                    ]
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'owner',
+                    foreignField: '_id',
+                    as: 'ownerDetails',
+                    pipeline: [
+                        {
+                            $project: {
+                                username: 1,
+                                fullName: 1,
+                                avatar: 1,
+                            }
+                        }
                     ]
                 }
             },
@@ -149,9 +184,12 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                 $project: {
                     name: 1,
                     description: 1,
+                    thumbnail: 1,
                     createdAt: 1,
                     updatedAt: 1,
-                    playlistVideos: 1
+                    playlistVideos: 1,
+                    ownerDetails: 1,
+                    owner: 1
                 }
             },
             {
