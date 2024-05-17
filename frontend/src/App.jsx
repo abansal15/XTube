@@ -9,6 +9,9 @@ import RegisterPage from './components/RegisterPage.jsx';
 import AdminDashboard from './components/AdminDashboard.jsx';
 import UserChannel from './components/UserChannel.jsx';
 import UserChannelPlaylist from './components/UserChannelPlaylist.jsx';
+import PlaylistVideos from './components/PlaylistVideos.jsx';
+import Profile from './components/Profile.jsx';
+import TweetPage from './components/TweetPage.jsx';
 
 function App() {
   return (
@@ -22,7 +25,11 @@ function App() {
           <Route exact path="/login" element={<LoginPage />} />
           <Route exact path="/admin-dashboard" element={<AdminDashboard />} />
           <Route exact path="/user-channel" element={<UserChannel />} />
-          <Route path="/user/playlist/:userId" element={<UserChannelPlaylist />} />
+          <Route exact path="/:username" element={<Profile />} />
+          <Route path="/user/playlist/:username/:userId" element={<UserChannelPlaylist />} />
+          <Route path="/user/:userId/playlist/:playlistId" element={<PlaylistVideos />} />
+          <Route path="/tweets/:username/:userId" element={<TweetPage />} />
+
         </Routes>
       </div>
     </Router>

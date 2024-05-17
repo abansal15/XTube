@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 
 function UserChannelPlaylist() {
 
-  const { userId } = useParams();
+  const { username, userId } = useParams();
 
   console.log("user id taken from params is : ", userId);
 
@@ -16,16 +16,15 @@ function UserChannelPlaylist() {
 
 
   useEffect(() => {
-
-    axios.get("/api/v1/users/current-user")
+    axios.get(`/api/v1/users/c/${username}`)
       .then((result) => {
         setUser(result.data.data);
-        console.log("user detais are : ", result.data.data)
-      }).catch((err) => {
-        console.log("error while finding user in navbar ", err)
+        console.log("user profile details are: ", result.data.data);
+      })
+      .catch((err) => {
+        console.log("error while finding user in Profile component ", err);
       });
-
-  }, [])
+  }, []);
 
   useEffect(() => {
 
@@ -93,18 +92,27 @@ function UserChannelPlaylist() {
 
             </div>
             <ul className="no-scrollbar sticky top-[66px] z-[2] flex flex-row gap-x-2 overflow-auto border-b-2 border-gray-400 py-2 sm:top-[82px]">
+
               <li className="w-full">
-                <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Videos</button>
+                <Link to={`/@${username}`}>
+                  <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Videos</button>
+                </Link>
               </li>
+
               <li className="w-full">
                 <button className="w-full border-b-2 border-[#ae7aff] bg-white px-3 py-1.5 text-[#ae7aff]">Playlist</button>
               </li>
+
               <li className="w-full">
-                <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Tweets</button>
+                <Link to={`/tweets/@${user.username}/${user._id}`}>
+                  <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Tweets</button>
+                </Link>
               </li>
+
               <li className="w-full">
                 <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Subscribed</button>
               </li>
+
             </ul>
             <>
               {playlist.length === 0 ? (
@@ -130,27 +138,31 @@ function UserChannelPlaylist() {
                   {
                     playlist.map((plist) => (
                       <div key={plist._id} className="w-full">
-                        <div className="relative mb-2 w-full pt-[56%]">
-                          <div className="absolute inset-0">
-                            <img src={plist.thumbnail} alt={plist.name} className="h-full w-full" />
-                            <div className="absolute inset-x-0 bottom-0">
-                              <div className="relative border-t bg-white/30 p-4 text-white backdrop-blur-sm before:absolute before:inset-0 before:bg-black/40">
-                                <div className="relative z-[1]">
-                                  <p className="flex justify-between">
-                                    <span className="inline-block">Playlist</span>
-                                    {
-                                      plist.playlistVideos.length > 1
-                                        ?
-                                        (<span className="inline-block">{plist.playlistVideos.length}&nbsp;videos</span>)
-                                        :
-                                        (<span className="inline-block">{plist.playlistVideos.length}&nbsp;video</span>)
-                                    }
-                                  </p>
-                                  <p className="text-sm text-gray-200">100K Views&nbsp;·&nbsp;2 hours ago</p>
+                        <div className="relative mb-2 w-[30%] pt-[20%]">
+
+                          <Link to={`/user/${userId}/playlist/${plist._id}`}>
+                            <div className="absolute inset-0">
+                              <img src={plist.thumbnail} alt={plist.name} className="h-full w-full" />
+                              <div className="absolute inset-x-0 bottom-0">
+                                <div className="relative border-t bg-white/30 p-4 text-white backdrop-blur-sm before:absolute before:inset-0 before:bg-black/40">
+                                  <div className="relative z-[1]">
+                                    <p className="flex justify-between">
+                                      <span className="inline-block">Playlist</span>
+                                      {
+                                        plist.playlistVideos.length > 1
+                                          ?
+                                          (<span className="inline-block">{plist.playlistVideos.length}&nbsp;videos</span>)
+                                          :
+                                          (<span className="inline-block">{plist.playlistVideos.length}&nbsp;video</span>)
+                                      }
+                                    </p>
+                                    <p className="text-sm text-gray-200">100K Views&nbsp;·&nbsp;2 hours ago</p>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
+                          </Link>
+
                         </div>
                         <h6 className="mb-1 font-semibold">{plist.name}</h6>
                         <p className="flex text-sm text-gray-200">{plist.description}.</p>

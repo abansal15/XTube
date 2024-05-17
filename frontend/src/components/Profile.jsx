@@ -2,32 +2,44 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import { useParams } from 'react-router-dom';
 
-function UserChannel() {
+function Profile() {
   const [user, setUser] = useState([]);
   const [videos, setVideo] = useState([]);
+  let { username } = useParams();
+  username = username.substr(1);
+
+  console.log("username is : ", username);
 
   useEffect(() => {
-    axios.get("/api/v1/users/current-user")
+    axios.get(`/api/v1/users/c/${username}`)
       .then((result) => {
         setUser(result.data.data);
-        console.log("user details are: ", result.data.data);
+        console.log("user profile details are: ", result.data.data);
       })
       .catch((err) => {
-        console.log("error while finding user in navbar ", err);
+        console.log("error while finding user in Profile component ", err);
       });
   }, []);
 
   useEffect(() => {
-    axios.get("/api/v1/dashboard/videos")
-      .then((result) => {
-        setVideo(result.data.data);
-        console.log("channel video details are: ", result.data.data);
-      })
-      .catch((err) => {
-        console.log("error while finding videos in channel ", err);
-      });
-  }, []);
+    const fetchVideos = async () => {
+      console.log("hi");
+      try {
+        if (user._id) {
+          const videoResponse = await axios.get(`/api/v1/dashboard/${user._id}`);
+          setVideo(videoResponse.data.data);
+
+          console.log("Channel video details are:", videoResponse.data.data);
+        }
+      } catch (error) {
+        console.log("Error while finding videos in channel:", error);
+      }
+    };
+
+    fetchVideos();
+  }, [user._id]);
 
   console.log("user channel videos array length is: ", videos.length);
 
@@ -70,13 +82,17 @@ function UserChannel() {
                 <button className="w-full border-b-2 border-[#ae7aff] bg-white px-3 py-1.5 text-[#ae7aff]">Videos</button>
               </li>
               <li className="w-full">
-                <Link to={`/user/playlist/${user.username}/${user._id}`}>
+                <Link to={`/user/playlist/${username}/${user._id}`}>
                   <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Playlist</button>
                 </Link>
               </li>
+
               <li className="w-full">
-                <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Tweets</button>
+                <Link to={`/tweets/@${user.username}/${user._id}`}>
+                  <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Tweets</button>
+                </Link>
               </li>
+              
               <li className="w-full">
                 <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Subscribed</button>
               </li>
@@ -123,7 +139,7 @@ function UserChannel() {
                     </div>
                   ))}
                 </div>
-                
+
               </div>
             )}
           </div>
@@ -133,4 +149,4 @@ function UserChannel() {
   );
 }
 
-export default UserChannel;
+export default Profile;

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import Navbar from './Navbar';
 import DisplayAllVideo from './DisplayAllVideo';
+import { Link } from 'react-router-dom';
 
 
 
@@ -56,6 +57,7 @@ function PlayingVideo() {
                 // console.log(response.data.data);
                 const videoData = response.data.data.find(video => video.videoFile === value);
                 if (videoData) {
+                    console.log("video details are : ", videoData);
                     setVideo(videoData);
                 } else {
                     console.log("Video not found");
@@ -117,7 +119,11 @@ function PlayingVideo() {
                                 </div>
 
                                 <div className="block">
-                                    <p className="text-gray-200">{video.ownerDetails[0].fullName}</p>
+
+                                    <Link to={`/@${video.ownerDetails[0].username}`}>
+                                        <p className="text-gray-200">{video.ownerDetails[0].fullName}</p>
+                                    </Link>
+
                                     <p className="text-sm text-gray-400">{video.subcriptions} Subscribers</p>
                                 </div>
 
