@@ -6,10 +6,11 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 const createTweet = asyncHandler(async (req, res) => {
-    // create tweet
+    // create tweet 
     const user = req.user?._id;
-    const content = req.body.content;
-    const {channel} = req.params;
+    const { content } = req.body;
+    const { channel } = req.params;
+
     if (!content) {
         throw new ApiError(400, "Tweet Content is required");
     }

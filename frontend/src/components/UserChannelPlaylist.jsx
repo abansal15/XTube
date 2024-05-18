@@ -12,7 +12,10 @@ function UserChannelPlaylist() {
   console.log("user id taken from params is : ", userId);
 
   const [user, setUser] = useState([]);
+  const [authUser, setAuthUser] = useState([]);
   const [playlist, setPlaylist] = useState([]);
+  const [subscribers, setSubscribers] = useState([]);
+  const [subscribedTo, setSubscribedTo] = useState([]);
 
 
   useEffect(() => {
@@ -37,6 +40,39 @@ function UserChannelPlaylist() {
       });
 
   }, [])
+
+  useEffect(() => {
+    axios.get("/api/v1/users/current-user")
+      .then((result) => {
+        setAuthUser(result.data.data);
+        console.log("auth user details are: ", result.data.data);
+      })
+      .catch((err) => {
+        console.log("error while finding auth user in playlist page ", err);
+      });
+  }, []);
+
+  useEffect(() => {
+    axios.get(`/api/v1/subscriptions/c/${userId}`)
+      .then((result) => {
+        setSubscribers(result.data.data);
+        console.log("Subscribers details are: ", result.data.data);
+      })
+      .catch((err) => {
+        console.log("error while finding subscribers in user channel ", err);
+      });
+  }, []);
+
+  useEffect(() => {
+    axios.get(`/api/v1/subscriptions/u/${userId}`)
+      .then((result) => {
+        setSubscribedTo(result.data.data);
+        console.log("Subscribed TO details are: ", result.data.data);
+      })
+      .catch((err) => {
+        console.log("error while finding the subscribed to in user channel ", err);
+      });
+  }, []);
 
 
 
@@ -73,7 +109,7 @@ function UserChannelPlaylist() {
               <div className="mr-auto inline-block">
                 <h1 className="font-bold text-xl">{user.fullName}</h1>
                 <p className="text-sm text-gray-400">@{user.username}</p>
-                <p className="text-sm text-gray-400">600k Subscribers&nbsp;·&nbsp;220 Subscribed   STATIC DATA</p>
+                <p className="text-sm text-gray-400">{subscribers?.length || 0} Subscribers&nbsp;·&nbsp;{subscribedTo?.length || 0} Subscribed</p>
               </div>
 
               {/* <div className="inline-block">
@@ -109,9 +145,19 @@ function UserChannelPlaylist() {
                 </Link>
               </li>
 
-              <li className="w-full">
-                <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Subscribed</button>
-              </li>
+              {user._id === authUser._id ?
+                (
+                  <li className="w-full">
+                    <Link to={`/subscribers/${user.username}/${user._id}`}>
+                      <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Subscribers</button>
+                    </Link>
+                  </li>
+                )
+                :
+                (
+                  <div></div>
+                )
+              }
 
             </ul>
             <>

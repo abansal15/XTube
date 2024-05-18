@@ -12,6 +12,7 @@ import UserChannelPlaylist from './components/UserChannelPlaylist.jsx';
 import PlaylistVideos from './components/PlaylistVideos.jsx';
 import Profile from './components/Profile.jsx';
 import TweetPage from './components/TweetPage.jsx';
+import Subscribers from './components/Subscribers.jsx';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/user/playlist/:username/:userId" element={<UserChannelPlaylist />} />
           <Route path="/user/:userId/playlist/:playlistId" element={<PlaylistVideos />} />
           <Route path="/tweets/:username/:userId" element={<TweetPage />} />
+          <Route path="/subscribers/:username/:userId" element={<Subscribers />} />
 
         </Routes>
       </div>

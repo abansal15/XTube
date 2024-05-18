@@ -6,7 +6,13 @@ import { useParams } from 'react-router-dom';
 
 function TweetPage() {
     const [user, setUser] = useState([]);
+    const [authUser, setAuthUser] = useState([]);
     const [tweets, setTweet] = useState([]);
+    const [subscribers, setSubscribers] = useState([]);
+    const [subscribedTo, setSubscribedTo] = useState([]);
+    const [content, setContent] = useState([]);
+    const [newTweet, setNewTweet] = useState([]);
+
     let { username, userId } = useParams();
     username = username.substr(1);
 
@@ -40,7 +46,66 @@ function TweetPage() {
         };
 
         fetchTweets();
-    }, [user._id]);
+    }, [user._id, newTweet]);
+
+    useEffect(() => {
+        axios.get("/api/v1/users/current-user")
+            .then((result) => {
+                setAuthUser(result.data.data);
+                console.log("auth user details are: ", result.data.data);
+            })
+            .catch((err) => {
+                console.log("error while finding auth user in playlist page ", err);
+            });
+    }, []);
+
+    useEffect(() => {
+        axios.get(`/api/v1/subscriptions/c/${userId}`)
+            .then((result) => {
+                setSubscribers(result.data.data);
+                console.log("Subscribers details are: ", result.data.data);
+            })
+            .catch((err) => {
+                console.log("error while finding subscribers in user channel ", err);
+            });
+    }, []);
+
+    useEffect(() => {
+        axios.get(`/api/v1/subscriptions/u/${userId}`)
+            .then((result) => {
+                setSubscribedTo(result.data.data);
+                console.log("Subscribed TO details are: ", result.data.data);
+            })
+            .catch((err) => {
+                console.log("error while finding the subscribed to in user channel ", err);
+            });
+    }, []);
+
+    const uploadTweet = () => {
+        if (!content) {
+            console.log("Content is required.");
+            return;
+        }
+
+        console.log("content is ", content);
+
+        const formData = new FormData();
+        formData.append('content', content);
+
+        axios.post(`/api/v1/tweets/${userId}`, { content })
+            .then((result) => {
+
+                setNewTweet(result.data);
+                console.log("New Tweet is : ", result.data);
+                setNewTweet([])
+
+                setContent('');
+
+            }).catch((err) => {
+                console.log("Error while uploading the tweet", err)
+            });
+
+    }
 
     return (
         <div>
@@ -73,7 +138,7 @@ function TweetPage() {
                             <div className="mr-auto inline-block">
                                 <h1 className="font-bold text-xl">{user.fullName}</h1>
                                 <p className="text-sm text-gray-400">@{user.username}</p>
-                                <p className="text-sm text-gray-400">600k Subscribers&nbsp;·&nbsp;220 Subscribed   STATIC DATA</p>
+                                <p className="text-sm text-gray-400">{subscribers?.length || 0} Subscribers&nbsp;·&nbsp;{subscribedTo?.length || 0} Subscribed</p>
                             </div>
                         </div>
                         <ul className="no-scrollbar sticky top-[66px] z-[2] flex flex-row gap-x-2 overflow-auto border-b-2 border-gray-400 py-2 sm:top-[82px]">
@@ -92,10 +157,50 @@ function TweetPage() {
                                 <button className="w-full border-b-2 border-[#ae7aff] bg-white px-3 py-1.5 text-[#ae7aff]">Tweets</button>
                             </li>
 
-                            <li className="w-full">
-                                <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Subscribed</button>
-                            </li>
+                            {user._id === authUser._id ?
+                                (
+                                    <li className="w-full">
+                                        <Link to={`/subscribers/${user.username}/${user._id}`}>
+                                            <button className="w-full border-b-2 border-transparent px-3 py-1.5 text-gray-400">Subscribers</button>
+                                        </Link>
+                                    </li>
+                                )
+                                :
+                                (
+                                    <div></div>
+                                )
+                            }
+
                         </ul>
+
+
+                        <div className="mt-2 mb-4 border pb-2">
+
+                            <input
+                                type="text"
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                placeholder="Write a tweet"
+                                className="mb-2 h-10 w-full resize-none border-none bg-transparent px-3 pt-2 outline-none"
+                            />
+
+                            <div className="flex items-center justify-end gap-x-3 px-3">
+                                <button className="inline-block h-5 w-5 hover:text-[#ae7aff]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" />
+                                    </svg>
+                                </button>
+                                <button className="inline-block h-5 w-5 hover:text-[#ae7aff]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                                    </svg>
+                                </button>
+                                <button onClick={uploadTweet} className="bg-[#ae7aff] px-3 py-2 font-semibold text-black">Send</button>
+                            </div>
+                        </div>
+
+
+
                         {!tweets || tweets.length === 0 ? (
                             <div className="flex justify-center p-4 mt-11">
                                 <div className="w-full max-w-sm text-center">
@@ -150,8 +255,8 @@ function TweetPage() {
 
                     </div>
                 </section>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
 
