@@ -22,6 +22,8 @@ function Profile() {
 
   const [collapsed, setCollapsed] = useState(true);
 
+  const [notfound, setNotfound] = useState(1)
+
   const toggleCodeVisibility = () => {
     setCodeVisible(!codeVisible);
   };
@@ -33,7 +35,7 @@ function Profile() {
   let { username } = useParams();
   username = username.substr(1);
 
-  // console.log("username is : ", username);
+  console.log("username is : ", username);
 
   useEffect(() => {
     axios.get(`/api/v1/users/c/${username}`)
@@ -43,6 +45,7 @@ function Profile() {
       })
       .catch((err) => {
         console.log("error while finding user in Profile component ", err);
+        setNotfound(0);
       });
   }, []);
 
@@ -145,7 +148,7 @@ function Profile() {
 
   return (
     <>
-      {user.length > 0 ? (
+      {notfound == 1 ? (
         <div>
           {/* User channel */}
           <Navbar toggleSidebar={toggleSidebar} />
