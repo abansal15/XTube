@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import Sidebar from './Sidebar';
 // import { upload } from '../../../backend/src/middlewares/multer.middleware';
 
 const PlaylistVideos = () => {
@@ -16,12 +17,17 @@ const PlaylistVideos = () => {
   const [videoFile, setvideoFile] = useState(null);
   const [uploaded, setUploaded] = useState([]);
   const [thumbnail, setThumbnail] = useState();
+  const [collapsed, setCollapsed] = useState(true);
 
-  console.log("title is : ", title);
-  console.log("description is : ", description);
+  // console.log("title is : ", title);
+  // console.log("description is : ", description);
 
   const toggleCodeVisibility = () => {
     setCodeVisible(!codeVisible);
+  };
+
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
   };
 
   const uploadVideo = () => {
@@ -30,7 +36,7 @@ const PlaylistVideos = () => {
       return;
     }
 
-    console.log("file is : ", thumbnail);
+    // console.log("file is : ", thumbnail);
 
     const formData = new FormData();
     formData.append('title', title);
@@ -41,15 +47,15 @@ const PlaylistVideos = () => {
     axios.post('/api/v1/videos/', formData)
       .then((res) => {
         setUploaded(res.data.data);
-        console.log("uploaded video details is : ", res.data.data)
+        // console.log("uploaded video details is : ", res.data.data)
         setCodeVisible(!codeVisible);
 
-        console.log("uploaded video id is ", uploaded._id);
+        // console.log("uploaded video id is ", uploaded._id);
 
         axios.patch(`/api/v1/playlist/add/${uploaded._id}/${playlist._id}`)
           .then((res) => {
             setPlaylist(res.data.data[0]);
-            console.log("Updated playlist details are : ", res.data.data[0])
+            // console.log("Updated playlist details are : ", res.data.data[0])
           })
           .catch((err) => {
             console.log("Error while updating the playlist", err)
@@ -65,7 +71,7 @@ const PlaylistVideos = () => {
     axios.get(`/api/v1/playlist/${playlistId}`)
       .then((result) => {
         setPlaylist(result.data.data[0]);
-        console.log("playlist details are : ", result.data.data[0])
+        // console.log("playlist details are : ", result.data.data[0])
       }).catch((err) => {
         console.log("error while fetching user playlist ", err)
       });
@@ -75,7 +81,43 @@ const PlaylistVideos = () => {
   let playlistVideos = playlist.playlistVideos;
   let videosLength = playlistVideos ? playlistVideos.length : 0;
 
+  function formatDuration(duration) {
+    if (duration > 3600) {
+      const hours = Math.floor(duration / 3600);
+      const minutes = Math.floor((duration % 3600) / 60);
+      return `${hours}h ${minutes}m`;
+    } else if (duration > 60) {
+      const minutes = Math.floor(duration / 60);
+      return `${minutes}m`;
+    } else {
+      return `${duration}s`;
+    }
+  }
 
+  function formatCreatedAt(created) {
+    const currentTime = new Date();
+    const createdAt = new Date(created);
+    const elapsed = currentTime - createdAt;
+    const msPerMinute = 60 * 1000;
+    const msPerHour = msPerMinute * 60;
+    const msPerDay = msPerHour * 24;
+    const msPerMonth = msPerDay * 30;
+    const msPerYear = msPerMonth * 12;
+
+    if (elapsed < msPerMinute) {
+      return (Math.round(elapsed / 1000) + ' seconds ago');
+    } else if (elapsed < msPerHour) {
+      return (Math.round(elapsed / msPerMinute) + ' minutes ago');
+    } else if (elapsed < msPerDay) {
+      return (Math.round(elapsed / msPerHour) + ' hours ago');
+    } else if (elapsed < msPerMonth) {
+      return (Math.round(elapsed / msPerDay) + ' days ago');
+    } else if (elapsed < msPerYear) {
+      return (Math.round(elapsed / msPerMonth) + ' month ago');
+    } else {
+      return (Math.round(elapsed / msPerYear) + ' year ago');
+    }
+  }
 
   // console.log("playlistId ", playlistId)
   // console.log("userId ", userId)
@@ -83,18 +125,11 @@ const PlaylistVideos = () => {
 
   return (
     <div>
-      <Navbar />
+      <Navbar toggleSidebar={toggleSidebar} />
       <div style={{ display: 'flex' }}>
         {/* Sidebar Section */}
         <div className='sidebar'>
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginLeft: '50px', marginTop: '20px' }}>
-            <a href="/" className='text-white mr-4'>Home</a>
-            <a href="#" className='text-white mr-4'>Liked Videos</a>
-            <a href="#" className='text-white mr-4'>History</a>
-            <a href="#" className='text-white'>My content</a>
-            <a href="#" className='text-white mr-4'>Collections</a>
-            <a href="#" className='text-white'>Subscribers</a>
-          </nav>
+          <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />
         </div>
 
 
@@ -120,7 +155,7 @@ const PlaylistVideos = () => {
                                 (<span className="inline-block">{videosLength}&nbsp;video</span>)
                             }
                           </p>
-                          <p className="text-sm text-gray-200">100K Views&nbsp;·&nbsp;2 hours ago</p>
+                          <p className="text-sm text-gray-200">{formatCreatedAt(playlist.createdAt)}</p>
                         </div>
                       </div>
                     </div>
@@ -159,13 +194,13 @@ const PlaylistVideos = () => {
                             <div className="absolute inset-0">
                               <img src={video.thumbnail} alt="thumbnail" className="h-full w-full" />
                             </div>
-                            <span className="absolute bottom-1 right-1 inline-block rounded bg-black px-1.5 text-sm">{video.duration} min</span>
+                            <span className="absolute bottom-1 right-1 inline-block rounded bg-black px-1.5 text-sm">{formatDuration(video.duration)} </span>
                           </div>
                         </div>
                         <div className="flex gap-x-2 px-2 sm:w-7/12 sm:px-0">
                           <div className="w-full">
                             <h6 className="mb-1 font-semibold sm:max-w-[75%]">{video.title}</h6>
-                            <p className="flex text-sm text-gray-200 sm:mt-3">{video.views}&nbsp;Views · 44 minutes ago</p>
+                            <p className="flex text-sm text-gray-200 sm:mt-3">{video.views}&nbsp;Views · {formatCreatedAt(video.createdAt)}</p>
                             <div className="flex items-center gap-x-4">
                               <div className="mt-2 hidden h-10 w-10 shrink-0 sm:block">
                                 <img src={video.videoOwner?.[0].avatar} alt="avatar" className="h-full w-full rounded-full" />
@@ -196,7 +231,7 @@ const PlaylistVideos = () => {
               <div className="flex items-center justify-between border-b p-4">
                 <h2 className="text-xl font-semibold">Upload Video</h2>
 
-                <div style={{display: 'flex', flexDirection: 'row', gap:'10px'}}>
+                <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
                   <button onClick={uploadVideo} className="group/btn mr-1 flex w-auto items-center gap-x-2 bg-[#ae7aff] px-3 py-2 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]">
                     Save
                   </button>

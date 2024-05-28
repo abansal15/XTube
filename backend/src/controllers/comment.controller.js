@@ -24,12 +24,12 @@ const getVideoComments = asyncHandler(async (req, res) => {
         throw new ApiError(400, "video id is required or valid");
     }
 
-    //because skip and limit value in aggearagation must be greater than zero
-    if (page <= 0) {
-        page = 1
-    } if (limit <= 0) {
-        limit = 10
-    }
+    // //because skip and limit value in aggearagation must be greater than zero
+    // if (page <= 0) {
+    //     page = 1
+    // } if (limit <= 0) {
+    //     limit = 10
+    // }
 
     const comments = await Comment.aggregate([
         {
@@ -68,7 +68,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
                     $size: '$likeCount'
                 }
             }
-        }, 
+        },
         {
             $addFields: {
                 owner: {
@@ -84,12 +84,12 @@ const getVideoComments = asyncHandler(async (req, res) => {
                 // _id: '$_id'
             }
         },
-        {
-            $skip: (page - 1) * limit
-        },
-        {
-            $limit: page,
-        },
+        // {
+        //     $skip: (page - 1) * limit
+        // },
+        // {
+        //     $limit: page,
+        // },
     ]);
 
     // if (comments.length == 0) {
@@ -104,18 +104,18 @@ const getVideoComments = asyncHandler(async (req, res) => {
 const addComment = asyncHandler(async (req, res) => {
 
     const { videoId } = req.params;
-    const content = req.body.content;
+    const { addComm } = req.body;
 
     if (!videoId) {
         throw new ApiError(400, "video id not found")
     }
 
-    if (!content) {
+    if (!addComm) {
         throw new ApiError(400, "Comment not found")
     }
 
     const commentCreated = await Comment.create({
-        content: content,
+        content: addComm,
         video: new mongoose.Types.ObjectId(videoId),
         owner: req.user?._id
     })
@@ -187,26 +187,21 @@ const deleteComment = asyncHandler(async (req, res) => {
 
 
     try {
-        const updatedComment = await Comment.findByIdAndUpdate(
+        const updatedComment = await Comment.findByIdAndDelete(
             commentId,
-            {
-                $unset: {
-                    content: 1
-                }
-            },
             {
                 new: true,
             }
         )
 
         if (!updatedComment) {
-            throw new ApiError(400, "Something went wrong while updating the comment")
+            throw new ApiError(400, "Something went wrong while deleting the comment")
         }
 
-        return res.status(200).json(new ApiResponse(200, updatedComment, "comment updated successfully"))
+        return res.status(200).json(new ApiResponse(200, updatedComment, "comment deleted successfully"))
 
     } catch (error) {
-        throw new ApiError(401, error?.message || "cannot update comment")
+        throw new ApiError(401, error?.message || "cannot delete comment")
     }
 })
 

@@ -30,13 +30,13 @@ const getHomeVideos = asyncHandler(async (req, res) => {
 
                 $lookup: {
                     from: "likes",
-                    localField: "owner",
+                    localField: "_id",
                     foreignField: "video",
                     as: "likes",
                     pipeline: [
                         {
                             $project: {
-                                Video: 1
+                                video: 1
                             }
                         }
                     ]
@@ -46,7 +46,7 @@ const getHomeVideos = asyncHandler(async (req, res) => {
             {
 
                 $lookup: {
-                    from: "subcriptions",
+                    from: "subscriptions",
                     localField: "owner",
                     foreignField: "channel",
                     as: "subcriptions",

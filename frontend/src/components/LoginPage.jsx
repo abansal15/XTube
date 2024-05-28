@@ -17,22 +17,22 @@ function LoginPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-    
+
         axios.post('/api/v1/users/login', { email, username, password })
             .then((response) => {
-                console.log(response);
+                // console.log(response);
                 const { data } = response;
                 const { accessToken } = data.data;
-    
+
                 // Store the access token securely (e.g., in local storage)
                 localStorage.setItem('accessToken', accessToken);
 
-    
+
                 // Set authentication status in your component state or context
                 // setIsAuthenticated(true);
 
                 window.location.href = '/';
-    
+
                 // Redirect to another page or handle success as needed
             })
             .catch((error) => {
@@ -44,14 +44,15 @@ function LoginPage() {
     return (
         <>
             {/* <Navbar /> */}
+            <Navbar />
             <form onSubmit={handleSubmit}>
-                <div className="container">
+                <div className="container" style={{ backgroundColor: '#030303' }}>
 
                     <div className="header">
-                        <div className="text">
+                        <div className="text" style={{ color: 'white' }}>
                             {action}
                         </div>
-                        <div className="underline"></div>
+                        <div className="underline" style={{ color: 'white', background: 'white' }}></div>
                     </div>
 
 
@@ -74,14 +75,25 @@ function LoginPage() {
                         </div>
 
                     </div>
-
+                    {/* 
                     <div className="forgot-password">
                         Lost Password? <span>Click here!</span>
-                    </div>
+                    </div> */}
 
                     <div className="submit-container">
                         <button type="submit" className='submit'>Login</button>
                         {/* <div className={action === 'Sign up' ? "submit grap" : "submit"} onClick={() => { setAction("Login") }} >Login</div> */}
+                    </div>
+
+                    <div className="submit-container" style={{ marginTop: '-30px' }}>
+                        <h2 style={{ fontSize: '1.5rem' }} className='block'>Dont have an Account ? </h2>
+                        {/* <div className={action === 'Sign up' ? "submit grap" : "submit"} onClick={() => { setAction("Login") }} >Login</div> */}
+                    </div>
+
+                    <div style={{ display: 'flex', textAlign: 'center', justifyContent: 'center', marginTop: '-2.5rem' }}>
+                        <Link to= "/register">
+                            <button type="submit" className='submit' >Sign Up</button>
+                        </Link>
                     </div>
 
                 </div>

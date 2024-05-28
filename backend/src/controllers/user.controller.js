@@ -1,6 +1,7 @@
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { User } from "../models/user.model.js";
+import { Video } from "../models/video.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
@@ -8,7 +9,7 @@ import mongoose from "mongoose";
 
 
 const checking = asyncHandler(async (req, res) => {
-    return res.status(200).json(new ApiResponse(200,{}, "checking passed of user route"))
+    return res.status(200).json(new ApiResponse(200, {}, "checking passed of user route"))
 })
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -241,10 +242,33 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         },
         { new: true }
 
-    ).select("-password")
+    ).select("-password -avatar -coverImage -username -refreshToken -createdAt -updatedAt -watchHistory")
 
     return res.status(200).json(new ApiResponse(200, user, "Account details updated successfully"))
 
+})
+
+const updateChannelDetails = asyncHandler(async (req, res) => {
+    const { description } = req.body;
+
+    if (!description) {
+        throw new ApiError(400, "Description is required")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                description: description
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password -avatar -coverImage -username -fullName -refreshToken -createdAt -updatedAt -watchHistory")
+
+
+    return res.status(200).json(new ApiResponse(200, user, "Channel description updated successfully"))
 })
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
@@ -421,4 +445,32 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, user[0].watchHistory, "watch history fetched successfully"));
 })
 
-export { checking, registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory }
+const updateUserAddToHistory = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    if (!videoId) {
+        console.log("Video id not exist");
+        throw new ApiError(400, "Invalid video")
+    }
+
+    const user = await User.findById(req.user?._id);
+
+    const initialWatchHistoryLength = user.watchHistory.length;
+
+    await user.addToWatchHistory(videoId);
+
+    if (user.watchHistory.length > initialWatchHistoryLength) {
+        console.log("Video added to watch history successfully!");
+        // Increment view count here
+
+        const video = await Video.findById(videoId);
+        await video.increaseViewCount();
+
+    } else {
+        console.log("Video was already in watch history.");
+    }
+
+    return res.status(200).json(new ApiResponse(200, true , "Successfully done the watch history operation"))
+
+})
+
+export { checking, registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateUserAvatar, updateUserCoverImage, getUserChannelProfile, getWatchHistory, updateChannelDetails, updateUserAddToHistory }

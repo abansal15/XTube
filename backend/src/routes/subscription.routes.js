@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+    checkIsSubscribed,
     getSubscribedChannels,
     getUserChannelSubscribers,
     toggleSubscription,
@@ -14,6 +15,7 @@ router
     .get(getUserChannelSubscribers)
     .post(toggleSubscription);
 
-router.route("/u/:subscriberId").get(getSubscribedChannels);
+router.route("/u").get(getSubscribedChannels);
+router.route("/checkIsSubscribed/:channelId").get(checkIsSubscribed);
 
 export default router

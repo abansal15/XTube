@@ -19,7 +19,7 @@ function RegisterPage() {
     const [avatar, setAvatar] = useState();
     const [coverImage, setCoverimage] = useState();
 
-    console.log("fullname", fullName);
+    // console.log("fullname", fullName);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -34,7 +34,7 @@ function RegisterPage() {
 
         axios.post('/api/v1/users/register', formData)
             .then(result => {
-                console.log(result);
+                // console.log(result);
                 window.location.href = '/login';
                 // history.push('/login');
             })
@@ -46,13 +46,13 @@ function RegisterPage() {
         <>
             {/* <Navbar /> */}
 
-            <div className="container">
+            <div className="container" style={{ backgroundColor: '#030303' }}>
 
                 <div className="header">
-                    <div className="text">
+                    <div className="text" style={{ color: 'white' }}>
                         {action}
                     </div>
-                    <div className="underline"></div>
+                    <div className="underline" style={{ color: 'white', background: 'white' }}></div>
                 </div>
 
                 <form onSubmit={handleSubmit}>
@@ -95,6 +95,19 @@ function RegisterPage() {
                             {/* <div className={action === "Login" ? "submit gray" : "submit"} >Sign up</div> */}
                             {/* <div className={action === 'Sign up' ? "submit gray" : "submit"} onClick={() => { setAction("Login") }} >Login</div> */}
                         </div>
+
+
+                        <div className="submit-container" style={{ marginTop: '-3rem' }}>
+                            <h2 style={{ fontSize: '1.5rem' }} className='block'>Already have an Account ? </h2>
+                            {/* <div className={action === 'Sign up' ? "submit grap" : "submit"} onClick={() => { setAction("Login") }} >Login</div> */}
+                        </div>
+
+                        <div style={{ display: 'flex', textAlign: 'center', justifyContent: 'center', marginTop: '-3.5rem' }}>
+                            <Link to="/login">
+                                <button type="submit" className='submit' >Login </button>
+                            </Link>
+                        </div>
+
                     </div>
 
 

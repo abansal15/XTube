@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
+import Sidebar from './Sidebar';
 
 function UserChannelPlaylist() {
 
   const { username, userId } = useParams();
 
-  console.log("user id taken from params is : ", userId);
+  // console.log("user id taken from params is : ", userId);
 
   const [user, setUser] = useState([]);
   const [authUser, setAuthUser] = useState([]);
@@ -17,12 +18,28 @@ function UserChannelPlaylist() {
   const [subscribers, setSubscribers] = useState([]);
   const [subscribedTo, setSubscribedTo] = useState([]);
 
+  const [codeVisible, setCodeVisible] = useState(false);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState();
+  const [videoFile, setvideoFile] = useState(null);
+  const [uploaded, setUploaded] = useState([]);
+  const [thumbnail, setThumbnail] = useState();
+
+  const [collapsed, setCollapsed] = useState(true);
+
+  const toggleCodeVisibility = () => {
+    setCodeVisible(!codeVisible);
+  };
+
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
 
   useEffect(() => {
     axios.get(`/api/v1/users/c/${username}`)
       .then((result) => {
         setUser(result.data.data);
-        console.log("user profile details are: ", result.data.data);
+        // console.log("user profile details are: ", result.data.data);
       })
       .catch((err) => {
         console.log("error while finding user in Profile component ", err);
@@ -34,18 +51,18 @@ function UserChannelPlaylist() {
     axios.get(`/api/v1/playlist/user/${userId}`)
       .then((result) => {
         setPlaylist(result.data.data);
-        console.log("playlist details are : ", result.data.data)
+        // console.log("playlist details are : ", result.data.data)
       }).catch((err) => {
         console.log("error while fetching user playlist ", err)
       });
 
-  }, [])
+  }, [uploaded])
 
   useEffect(() => {
     axios.get("/api/v1/users/current-user")
       .then((result) => {
         setAuthUser(result.data.data);
-        console.log("auth user details are: ", result.data.data);
+        // console.log("auth user details are: ", result.data.data);
       })
       .catch((err) => {
         console.log("error while finding auth user in playlist page ", err);
@@ -56,7 +73,7 @@ function UserChannelPlaylist() {
     axios.get(`/api/v1/subscriptions/c/${userId}`)
       .then((result) => {
         setSubscribers(result.data.data);
-        console.log("Subscribers details are: ", result.data.data);
+        // console.log("Subscribers details are: ", result.data.data);
       })
       .catch((err) => {
         console.log("error while finding subscribers in user channel ", err);
@@ -67,7 +84,7 @@ function UserChannelPlaylist() {
     axios.get(`/api/v1/subscriptions/u/${userId}`)
       .then((result) => {
         setSubscribedTo(result.data.data);
-        console.log("Subscribed TO details are: ", result.data.data);
+        // console.log("Subscribed TO details are: ", result.data.data);
       })
       .catch((err) => {
         console.log("error while finding the subscribed to in user channel ", err);
@@ -75,24 +92,46 @@ function UserChannelPlaylist() {
   }, []);
 
 
+  const createPlaylist = () => {
+    if (!name || !description || !thumbnail) {
+      console.log("Name, description, and thumbnail file are required.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('description', description);
+    formData.append('thumbnail', thumbnail);
+
+    // console.log("name is ", name);
+    // console.log("description is ", description);
+    // console.log("thumbnail is ", thumbnail);
+
+    axios.post('/api/v1/playlist/', formData)
+      .then((res) => {
+        setUploaded(res.data.data);
+        // console.log("Created playlist details is : ", res.data.data)
+        setCodeVisible(!codeVisible);
+
+        // console.log("created playlist id is ", uploaded._id);
+
+      })
+      .catch((error) => {
+        console.log("error while creating the playlist ", error);
+      });
+  };
+
+
 
   return (
     <div>
       {/* user channel */}
-      <Navbar />
-
+      <Navbar toggleSidebar={toggleSidebar} />
       {/* Sidebar */}
 
-      <div className='sidebar' style={{ display: 'flex', flexDirection: 'row', gap: '80px', marginLeft: '60px', marginTop: '20px', marginRight: '100px' }}>
+      <div className='sidebar' style={{ display: 'flex', flexDirection: 'row', gap: '80px', marginLeft: '20px', marginTop: '20px', marginRight: '100px' }}>
 
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginLeft: '50px', marginTop: '20px' }}>
-          <a href="#" className='text-white mr-4'>Home</a>
-          <a href="#" className='text-white mr-4'>Liked Videos</a>
-          <a href="#" className='text-white mr-4'>History</a>
-          <a href="#" className='text-white'>My content</a>
-          <a href="#" className='text-white mr-4'>Collections</a>
-          <a href="#" className='text-white'>Subscribers</a>
-        </nav>
+        <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />
 
 
         <section className="w-full pb-[70px] sm:ml-[70px] sm:pb-0 lg:ml-0">
@@ -161,6 +200,12 @@ function UserChannelPlaylist() {
 
             </ul>
             <>
+
+              <div className='h-20 w-20 mt-4'>
+                <button onClick={toggleCodeVisibility}>Create Playlist</button>
+              </div>
+
+
               {playlist.length === 0 ? (
                 <div className="flex justify-center p-4">
                   <div className="w-full max-w-sm text-center">
@@ -179,12 +224,13 @@ function UserChannelPlaylist() {
                 </div>
               ) : (
 
-                <div className="grid gap-4 pt-2 sm:grid-cols-[repeat(auto-fit,minmax(400px,1fr))]">
+                <div className="grid pt-2 sm:grid-cols-[repeat(auto-fit,_minmax(400px,_1fr))]">
 
                   {
                     playlist.map((plist) => (
                       <div key={plist._id} className="w-full">
-                        <div className="relative mb-2 w-[30%] pt-[20%]">
+
+                        <div className="relative mb-2 w-[60%] pt-[40%]">
 
                           <Link to={`/user/${userId}/playlist/${plist._id}`}>
                             <div className="absolute inset-0">
@@ -210,8 +256,10 @@ function UserChannelPlaylist() {
                           </Link>
 
                         </div>
+
                         <h6 className="mb-1 font-semibold">{plist.name}</h6>
                         <p className="flex text-sm text-gray-200">{plist.description}.</p>
+
                       </div>
                     ))
                   }
@@ -225,6 +273,54 @@ function UserChannelPlaylist() {
         </section>
 
 
+        {codeVisible && (
+
+          <div className="absolute inset-0 z-10 bg-black/50 px-4 pb-[86px] pt-4 sm:px-14 sm:py-8">
+
+
+            <div className="h-full overflow-auto border bg-[#121212]">
+              <div className="flex items-center justify-between border-b p-4">
+                <h2 className="text-xl font-semibold">Create Playlist</h2>
+
+                <div style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}>
+                  <button onClick={createPlaylist} className="group/btn mr-1 flex w-auto items-center gap-x-2 bg-[#ae7aff] px-3 py-2 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]">
+                    Save
+                  </button>
+
+                  <button onClick={toggleCodeVisibility} className="group/btn mr-1 flex w-auto items-center gap-x-2 bg-[#fe7aff] px-3 py-2 text-center font-bold text-black shadow-[5px_5px_0px_0px_#4f4e4e] transition-all duration-150 ease-in-out active:translate-x-[5px] active:translate-y-[5px] active:shadow-[0px_0px_0px_0px_#4f4e4e]">
+                    cancel
+                  </button>
+                </div>
+
+              </div>
+
+              <form>
+
+                <div className="flex mx-auto flex w-full max-w-3xl flex-col gap-y-4 p-4 justify-center">
+
+                  <div className="w-full mt-9">
+                    <label htmlFor="thumbnail" className="mb-1 inline-block">Thumbnail<sup>*</sup></label>
+                    <input id="thumbnail" onChange={(e) => setThumbnail(e.target.files[0])} name='thumbnail' type="file" className="w-full border p-1 file:mr-4 file:border-none file:bg-[#ae7aff] file:px-3 file:py-1.5" />
+                  </div>
+
+                  <div className="w-full">
+                    <label htmlFor="Name" className="mb-1 inline-block">Name<sup>*</sup></label>
+                    <input id="Name" name='Name' onChange={(e) => setName(e.target.value)} type="text" className="w-full border bg-transparent px-2 py-1 outline-none" value={name} />
+                  </div>
+
+                  <div className="w-full">
+                    <label htmlFor="desc" className="mb-1 inline-block">Description<sup>*</sup></label>
+                    <textarea id="desc" name='description' onChange={(e) => setDescription(e.target.value)} className="h-40 w-full resize-none border bg-transparent px-2 py-1 outline-none"></textarea>
+                  </div>
+
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+
+        )}
 
 
       </div>

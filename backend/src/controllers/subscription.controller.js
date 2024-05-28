@@ -14,22 +14,25 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     }
     try {
         const existedSubscription = await Subscription.findOne({
-            subscriber: new mongoose.Types.ObjectId(req.user?._id),
-            channel: new mongoose.Types.ObjectId(channelId),
+            subscriber: req.user?._id,
+            channel: channelId,
         });
 
+        // console.log("Existed subscription is ", existedSubscription);
+
         if (existedSubscription) {
-            await existedSubscription.remove();
-            return res.status(200).json(new ApiResponse(200, existedSubscription, "Unsubscribed successfully"));
+            await Subscription.findByIdAndDelete(existedSubscription._id, { new: true });
+            return res.status(200).json(new ApiResponse(200, false, "Unsubscribed successfully"));
         }
 
         const newSubscription = await Subscription.create({
-            subscriber: new mongoose.Types.ObjectId(req.user?._id),
-            channel: new mongoose.Types.ObjectId(channelId),
+            subscriber: req.user?._id,
+            channel: channelId,
         });
 
-        return res.status(200).json(new ApiResponse(200, newSubscription, "Subscribed successfully"));
+        return res.status(200).json(new ApiResponse(200, true, "Subscribed successfully"));
     } catch (error) {
+        console.log("Error in toggle subscription function ", error);
         return res.status(500).json(new ApiError(500, "Internal Server Error"));
     }
 })
@@ -96,23 +99,49 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
 
-    const { subscriberId } = req.params
+    const subscriberId  = req.user?._id;
 
     const registeredUser = await User.findById(subscriberId)
 
     if (!registeredUser || !(registeredUser._id.toString() == req.user._id.toString())) {
-        throw new apiError(400, "subscriber id does not exists")
+        throw new ApiError(400, "subscriber id does not exists")
     }
 
     const listChannels = await Subscription.aggregate(
         [
             {
                 $match: {
-                    subscriber: new mongoose.Types.ObjectId(subscriberId)
+                    subscriber: subscriberId
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "channel",
+                    foreignField: "_id",
+                    as: "subscriptions",
+                    pipeline: [
+                        {
+                            $project: {
+                                fullName: 1,
+                                username: 1,
+                                avatar: 1,
+                                _id: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $addFields: {
+                    userDetails: {
+                        $first: "$subscriptions"
+                    }
                 }
             },
             {
                 $project: {
+                    userDetails: 1,
                     channel: 1
                 }
             }
@@ -136,8 +165,31 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 
 })
 
+const checkIsSubscribed = asyncHandler(async (req, res) => {
+    const { channelId } = req.params
+    if (!channelId.trim() || !isValidObjectId(channelId)) {
+        throw new ApiError(400, "channelid is required or invalid!");
+    }
+    try {
+        const existedSubscription = await Subscription.findOne({
+            subscriber: req.user?._id,
+            channel: channelId,
+        });
+
+        if (existedSubscription) {
+            return res.status(200).json(new ApiResponse(200, true, "user is subscribed to the channel"));
+        }
+
+        return res.status(200).json(new ApiResponse(200, false, " user is not subscribed to the channel"));
+    } catch (error) {
+        console.log("Error in checking is subscribed or not function ", error);
+        return res.status(500).json(new ApiError(500, "Internal Server Error"));
+    }
+})
+
 export {
     toggleSubscription,
     getUserChannelSubscribers,
-    getSubscribedChannels
+    getSubscribedChannels,
+    checkIsSubscribed
 }

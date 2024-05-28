@@ -143,11 +143,20 @@ const getLikedVideos = asyncHandler(async (req, res) => {
                 }
             },
             {
-                $unwind: "likedVideos",
+                $lookup: {
+                    from: "users",
+                    localField: "likedBy",
+                    foreignField: "_id",
+                    as: "OwnerDetails"
+                }
+            },
+            {
+                $unwind: "$likedVideos"
             },
             {
                 $project: {
-                    likedVideos: 1
+                    likedVideos: 1,
+                    OwnerDetails: 1
                 }
             }
         ]
@@ -165,9 +174,84 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, likedVideos, "liked videos fetched succesfully"))
 })
 
+const getTotalVideoLike = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    if (!(videoId && isValidObjectId(videoId))) {
+        throw new ApiError(400, "Invalid video id");
+    }
+
+    try {
+        const totalLike = await Like.find(
+            {
+                video: videoId,
+            }
+        )
+
+        return res.status(200).json(new ApiResponse(200, totalLike?.length || 0, "Liked no. of video fetched successfully"))
+
+    } catch (error) {
+        throw new ApiError(401, error?.message || "something went wrong while Counting the video likes")
+    }
+})
+
+const checkIsVideoLiked = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    if (!(videoId && isValidObjectId(videoId))) {
+        throw new ApiError(400, "Invalid video id");
+    }
+
+    try {
+        const userAlreadyLiked = await Like.find(
+            {
+                video: videoId,
+                likedBy: req.user?._id,
+            }
+        )
+
+        if (userAlreadyLiked && userAlreadyLiked.length > 0) {
+            return res.status(200).json(new ApiResponse(200, true, "Video is liked"))
+        }
+        else
+            return res.status(200).json(new ApiResponse(200, false, "Video is not liked"))
+
+    } catch (error) {
+        throw new ApiError(401, error?.message || "something went wrong while Finding whether video is liked or not ")
+    }
+
+})
+
+const DislikeVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    if (!(videoId && isValidObjectId(videoId))) {
+        throw new ApiError(400, "Invalid video id");
+    }
+    const userAlreadyLiked = await Like.find(
+        {
+            video: videoId,
+            likedBy: req.user?._id
+        }
+    )
+    if (userAlreadyLiked && userAlreadyLiked.length > 0) {
+        await Like.findByIdAndDelete(userAlreadyLiked[0]._id,
+            {
+                new: true
+            }
+        )
+
+        return res.status(200).json(new ApiResponse(200, true, "Video dislikked successfully"))
+    }
+    else 
+    {
+        return res.status(200).json(new ApiResponse(200, false, "Video is alr disliked "))
+    }
+})
+
 export {
     toggleCommentLike,
     toggleTweetLike,
     toggleVideoLike,
-    getLikedVideos
+    getLikedVideos,
+    getTotalVideoLike,
+    checkIsVideoLiked,
+    DislikeVideo
 }

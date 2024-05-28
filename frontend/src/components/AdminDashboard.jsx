@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./Navbar";
+import Sidebar from './Sidebar';
 
 function AdminDashboard() {
 
     const [user, setUser] = useState([]);
     const [stats,setStats] = useState([]);
+    const [collapsed, setCollapsed] = useState(true);
 
     useEffect(() => {
 
@@ -32,14 +34,20 @@ function AdminDashboard() {
 
     }, [])
 
+    const toggleSidebar = () => {
+        setCollapsed(!collapsed);
+    };
+
     return (
         <>
-            <Navbar />
+           <Navbar toggleSidebar={toggleSidebar} />
 
             <div style={{marginLeft:'2%', marginRight:'2%'}}>
                 <div className="mb-12">
                     <h1>Welcome Back, {user.fullName}</h1>
                 </div>
+
+                <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />
 
                 <div className="grid grid-cols-[repeat(auto-fit,_minmax(300px,_1fr))] gap-9">
                     <div className="border p-4">

@@ -3,20 +3,27 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import { useParams } from 'react-router-dom';
+import Sidebar from './Sidebar';
 
 function Subscribers() {
     const [user, setUser] = useState([]);
     const [subscribers, setSubscribers] = useState([]);
     const [subscribedTo, setSubscribedTo] = useState([]);
     const { username, userId } = useParams();
+    const [collapsed, setCollapsed] = useState(true);
 
-    console.log("user id from param is", userId);
+    // console.log("user id from param is", userId);
+
+    const toggleSidebar = () => {
+        setCollapsed(!collapsed);
+    };
+
 
     useEffect(() => {
         axios.get("/api/v1/users/current-user")
             .then((result) => {
                 setUser(result.data.data);
-                console.log("user details are: ", result.data.data);
+                // console.log("user details are: ", result.data.data);
             })
             .catch((err) => {
                 console.log("error while finding user in Subscribers page ", err);
@@ -27,7 +34,7 @@ function Subscribers() {
         axios.get(`/api/v1/subscriptions/c/${userId}`)
             .then((result) => {
                 setSubscribers(result.data.data);
-                console.log("Subscribers details are: ", result.data.data);
+                // console.log("Subscribers details are: ", result.data.data);
             })
             .catch((err) => {
                 console.log("error while finding subscribers in user channel ", err);
@@ -38,30 +45,23 @@ function Subscribers() {
         axios.get(`/api/v1/subscriptions/u/${userId}`)
             .then((result) => {
                 setSubscribedTo(result.data.data);
-                console.log("Subscribed TO details are: ", result.data.data);
+                // console.log("Subscribed TO details are: ", result.data.data);
             })
             .catch((err) => {
                 console.log("error while finding the subscribed to in user channel ", err);
             });
     }, []);
 
-    console.log("user channel subscribers array length is: ", subscribers.length);
+    // console.log("user channel subscribers array length is: ", subscribers.length);
 
     return (
         <div>
             {/* User channel */}
-            <Navbar />
+            <Navbar toggleSidebar={toggleSidebar} />
 
             {/* Sidebar */}
-            <div className='sidebar' style={{ display: 'flex', flexDirection: 'row', gap: '80px', marginLeft: '60px', marginTop: '20px', marginRight: '100px' }}>
-                <nav style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginLeft: '50px', marginTop: '20px' }}>
-                    <a href="#" className='text-white mr-4'>Home</a>
-                    <a href="#" className='text-white mr-4'>Liked subscribers</a>
-                    <a href="#" className='text-white mr-4'>History</a>
-                    <a href="#" className='text-white'>My content</a>
-                    <a href="#" className='text-white mr-4'>Collections</a>
-                    <a href="#" className='text-white'>Subscribers</a>
-                </nav>
+            <div className='sidebar' style={{ display: 'flex', flexDirection: 'row', gap: '80px', marginLeft: '20px', marginTop: '20px', marginRight: '100px' }}>
+                <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />
 
 
                 <section className="w-full pb-[70px] sm:ml-[70px] sm:pb-0 lg:ml-0">
@@ -103,7 +103,7 @@ function Subscribers() {
 
                             <li className="w-full">
                                 {/* <Link to={`/subscribers/${user.username}/${user._id}`}> */}
-                                    <button className="w-full border-b-2 border-[#ae7aff] bg-white px-3 py-1.5 text-[#ae7aff]">Subscribers</button>
+                                <button className="w-full border-b-2 border-[#ae7aff] bg-white px-3 py-1.5 text-[#ae7aff]">Subscribers</button>
                                 {/* </Link> */}
                             </li>
 

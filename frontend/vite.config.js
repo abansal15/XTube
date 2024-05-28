@@ -23,5 +23,8 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src') // Adjust this to your source directory if different
     }
-  }
+  },
+  // optimizeDeps: {
+  //   exclude: ['@mapbox/node-pre-gyp', 'mock-aws-s3', 'aws-sdk', 'nock'],
+  // },
 });

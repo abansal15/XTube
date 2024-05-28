@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Navbar from './Navbar';
+import Sidebar from './Sidebar';
 
 function UserChannel() {
   const [user, setUser] = useState([]);
@@ -15,16 +16,21 @@ function UserChannel() {
   const [videoFile, setvideoFile] = useState(null);
   const [uploaded, setUploaded] = useState([]);
   const [thumbnail, setThumbnail] = useState();
+  const [collapsed, setCollapsed] = useState(true);
 
   const toggleCodeVisibility = () => {
     setCodeVisible(!codeVisible);
+  };
+
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
   };
 
   useEffect(() => {
     axios.get("/api/v1/users/current-user")
       .then((result) => {
         setUser(result.data.data);
-        console.log("user details are: ", result.data.data);
+        // console.log("user details are: ", result.data.data);
       })
       .catch((err) => {
         console.log("error while finding user in userchannel page ", err);
@@ -35,7 +41,7 @@ function UserChannel() {
     axios.get("/api/v1/dashboard/videos")
       .then((result) => {
         setVideo(result.data.data);
-        console.log("channel video details are: ", result.data.data);
+        // console.log("channel video details are: ", result.data.data);
       })
       .catch((err) => {
         console.log("error while finding videos in channel ", err);
@@ -46,7 +52,7 @@ function UserChannel() {
     axios.get(`/api/v1/subscriptions/c/${user._id}`)
       .then((result) => {
         setSubscribers(result.data.data);
-        console.log("Subscribers details are: ", result.data.data);
+        // console.log("Subscribers details are: ", result.data.data);
       })
       .catch((err) => {
         console.log("error while finding subscribers in user channel ", err);
@@ -57,7 +63,7 @@ function UserChannel() {
     axios.get(`/api/v1/subscriptions/u/${user._id}`)
       .then((result) => {
         setSubscribedTo(result.data.data);
-        console.log("Subscribed TO details are: ", result.data.data);
+        // console.log("Subscribed TO details are: ", result.data.data);
       })
       .catch((err) => {
         console.log("error while finding the subscribed to in user channel ", err);
@@ -65,7 +71,7 @@ function UserChannel() {
   }, []);
 
 
-  console.log("user channel videos array length is: ", videos.length);
+  // console.log("user channel videos array length is: ", videos.length);
 
   const uploadVideo = () => {
     if (!title || !description || !videoFile) {
@@ -73,7 +79,7 @@ function UserChannel() {
       return;
     }
 
-    console.log("file is : ", thumbnail);
+    // console.log("file is : ", thumbnail);
 
     const formData = new FormData();
     formData.append('title', title);
@@ -84,15 +90,15 @@ function UserChannel() {
     axios.post('/api/v1/videos/', formData)
       .then((res) => {
         setUploaded(res.data.data);
-        console.log("uploaded video details is : ", res.data.data)
+        // console.log("uploaded video details is : ", res.data.data)
         setCodeVisible(!codeVisible);
 
-        console.log("uploaded video id is ", uploaded._id);
+        // console.log("uploaded video id is ", uploaded._id);
 
         axios.patch(`/api/v1/playlist/add/${uploaded._id}/${playlist._id}`)
           .then((res) => {
             setPlaylist(res.data.data[0]);
-            console.log("Updated playlist details are : ", res.data.data[0])
+            // console.log("Updated playlist details are : ", res.data.data[0])
 
             window.location.reload();
           })
@@ -109,18 +115,11 @@ function UserChannel() {
   return (
     <div>
       {/* User channel */}
-      <Navbar />
+      <Navbar toggleSidebar={toggleSidebar} />
 
       {/* Sidebar */}
-      <div className='sidebar' style={{ display: 'flex', flexDirection: 'row', gap: '80px', marginLeft: '60px', marginTop: '20px', marginRight: '100px' }}>
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '40px', marginLeft: '50px', marginTop: '20px' }}>
-          <a href="#" className='text-white mr-4'>Home</a>
-          <a href="#" className='text-white mr-4'>Liked Videos</a>
-          <a href="#" className='text-white mr-4'>History</a>
-          <a href="#" className='text-white'>My content</a>
-          <a href="#" className='text-white mr-4'>Collections</a>
-          <a href="#" className='text-white'>Subscribers</a>
-        </nav>
+      <div className='sidebar' style={{ display: 'flex', flexDirection: 'row', gap: '80px', marginLeft: '20px', marginTop: '20px', marginRight: '100px' }}>
+        <Sidebar collapsed={collapsed} toggleSidebar={toggleSidebar} />
 
 
         <section className="w-full pb-[70px] sm:ml-[70px] sm:pb-0 lg:ml-0">

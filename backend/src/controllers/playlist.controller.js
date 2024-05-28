@@ -7,8 +7,11 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
 const createPlaylist = asyncHandler(async (req, res) => {
+
+    console.log("REQUEST IS" , req.body);
+
     const { name, description } = req.body;
-    const thumbnailPath = req.file?.thumbnail[0]?.path;
+    const thumbnailPath = req.files?.thumbnail[0]?.path;
     // create playlist
     if (!name || !description || !thumbnailPath) {
         throw new ApiError(400, "name , description and Thumbnail all are required")
@@ -156,7 +159,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                                 description: 1,
                                 duration: 1,
                                 views: 1,
-                                videoOwner: 1
+                                videoOwner: 1,
+                                createdAt: 1,
                             }
                         },
 

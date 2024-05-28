@@ -32,10 +32,14 @@ const userSchema = new Schema(
         coverImage: {
             type: String,
         },
+        description: {
+            type: String,
+            default: "Na"
+        },
         watchHistory: [
             {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Video"
+                ref: "Video",
             }
         ],
         password: {
@@ -89,5 +93,12 @@ userSchema.methods.generateRefreshToken = function () {
         }
     )
 }
+
+userSchema.methods.addToWatchHistory = async function (videoId) {
+    if (!this.watchHistory.includes(videoId)) {
+        this.watchHistory.push(videoId);
+        await this.save();
+    }
+};
 
 export const User = mongoose.model("User", userSchema);
