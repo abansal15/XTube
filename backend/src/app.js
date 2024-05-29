@@ -4,9 +4,14 @@ import cookieParser from 'cookie-parser';
 
 const app = express();
 
+// app.use(cors({
+//     origin: ["https://deploy-mern-1whq.vercel.app"],
+//     // methods: ['GET', 'POST'],
+//     credentials: true
+// }))
+
 app.use(cors({
-    origin: ["https://deploy-mern-1whq.vercel.app"],
-    // methods: ['GET', 'POST'],
+    origin: process.env.CORS_ORIGIN,
     credentials: true
 }))
 
