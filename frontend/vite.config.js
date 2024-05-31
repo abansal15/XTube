@@ -7,7 +7,7 @@ import { resolve } from 'path';
 export default defineConfig({
   server: {
     proxy: {
-      '/api': 'http://localhost:8000',
+      '/api': 'https://xtube-api.onrender.com',
     },
   },
   plugins: [react()],
