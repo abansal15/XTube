@@ -3,6 +3,6 @@ import { authCheck } from "../controllers/authCheck.controller.js";
 
 const router = Router();
 
-router.route('/status').post(authCheck);
+router.route('/status').get(authCheck);
 
 export default router
