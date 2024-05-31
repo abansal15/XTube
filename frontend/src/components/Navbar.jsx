@@ -11,22 +11,20 @@ function Navbar() {
 
     useEffect(() => {
         const fetchAuthenticationStatus = async () => {
-          try {
-            const response = await axios.get("/api/v1/auth/status", {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-              }
-            });
-            // console.log("hooooooooojojojoojookoklw  ");
-            setIsAuthenticated(response.data.data.isAuthenticated);
-            // setLoading(false);
-          } catch (error) {
-            console.log("Error fetching authentication status:", error);
-          }
+            try {
+                const response = await axios.post("/api/v1/auth/status", {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('accessToken')}`
+                    }
+                });
+                setIsAuthenticated(response.data.data.isAuthenticated);
+            } catch (error) {
+                console.log("Error fetching authentication status:", error);
+            }
         };
-    
+
         fetchAuthenticationStatus();
-      }, []);
+    }, []);
 
     useEffect(() => {
         axios.get("/api/v1/users/current-user")
@@ -58,13 +56,6 @@ function Navbar() {
                 <div className='flex items-center'>
                     <img src="https://cdn.create.vista.com/api/media/small/411025630/stock-vector-logo-design-white-letter-letter-logo-design-initial-letter-linked"
                         alt="Logo" className='h-28 rounded-full' />
-                    {/* <div style={{ display: 'flex', justifyContent: 'center', backgroundColor: 'red', alignItems: 'center', marginLeft: isAuthenticated ? '10%' : '250%' }}>
-                        <input
-                            type="text"
-                            placeholder="Search"
-                            className="px-4 py-2 rounded-md focus:outline-none"
-                        />
-                    </div> */}
                 </div>
                 <div className="flex items-center space-x-4">
                     {isAuthenticated ? (
@@ -72,12 +63,11 @@ function Navbar() {
                             <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md focus:outline-none" style={{ height: '55px', marginTop: '10px' }}>
                                 Logout
                             </button>
-                            <div className="h-20 w-20" onClick={toggleSideBox}> {/* Step 3 */}
+                            <div className="h-20 w-20" onClick={toggleSideBox}>
                                 <img src={user.avatar} alt={user.fullName} className="h-full w-full rounded-full cursor-pointer" />
                             </div>
-                            {isSideBoxOpen && ( /* Step 4 */
+                            {isSideBoxOpen && (
                                 <div className="absolute top-0 mt-36 sm:right-0 md:right-5 lg:right-10 xl:right-20 w-50 bg-white shadow-lg rounded-lg" style={{ zIndex: 100 }}>
-                                 
                                     <div id="header" className="style-scope ytd-multi-page-menu-renderer bg-gray-900" style={{ color: 'white', padding: '10px', height: '250px', width: '250px', transform: 'scale(1.2)' }}>
                                         <div className="flex flex-row ml-4">
                                             <img src={user.avatar} alt={user.fullName} className="rounded-full cursor-pointer" style={{ height: '40px', width: '40px' }} />
