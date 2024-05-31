@@ -12,7 +12,7 @@ function Navbar() {
     useEffect(() => {
         const fetchAuthenticationStatus = async () => {
           try {
-            const response = await axios.post("/api/v1/auth/status", {
+            const response = await axios.get("/api/v1/auth/status", {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem('accessToken')}`
               }
